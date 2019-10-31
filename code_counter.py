@@ -1,5 +1,5 @@
 """
-    Code Counter
+    Count Counter
     A program that counts the lines of code and code characters in a code-base
     Author      :   Israel Dryer
     Modified    :   2019-10-30
@@ -79,6 +79,7 @@ def main():
 
     if filename is None:
         sg.popup_error('No file selected', title='ERROR!')
+        return
     else:
         clean_data, char_count, line_count = read_file(filename)
 
