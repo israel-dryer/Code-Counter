@@ -161,7 +161,7 @@ def main():
     layout = [
         [btn('Load FILE'), btn('CALC!'), btn('RESET'),
          sg.Text('PASTE python code or LOAD from file; then click CALC!', font=(sg.DEFAULT_FONT, 12))],
-        [sg.Multiline(key='IN_OUT', size=(160, 25), font=(sg.DEFAULT_FONT, 12))],
+        [sg.Multiline(key='IN_OUT', size=(160, 18), font=(sg.DEFAULT_FONT, 12))],
         [sg.Canvas(size=(434, 288), key='IMG'), sg.Multiline('', font=(sg.DEFAULT_FONT, 12), key='STATS')]]
 
     window = sg.Window('Code Counter', layout, resizable=True, finalize=True)
