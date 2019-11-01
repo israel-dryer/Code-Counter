@@ -2,7 +2,7 @@
     Count Counter
     A program that counts the lines of code and code characters in a code-base
     Author      :   Israel Dryer
-    Modified    :   2019-10-31
+    Modified    :   2019-11-01
 
 """
 import PySimpleGUI as sg
@@ -91,7 +91,7 @@ def save_data(clean_code, code_stats, window):
 
 
 def display_charts(char_cnt, window):
-    """ create chart images to display in window """
+    """ create charts to display in window """
 
     def draw_figure(canvas, figure, loc=(0, 0)):
         """ matplotlib helper function """
@@ -100,9 +100,9 @@ def display_charts(char_cnt, window):
         figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
         return figure_canvas_agg
 
-    # histogram
     figure = plt.figure(num=1, figsize=(10, 10))
 
+    # histogram
     plt.subplot(121)
     plt.hist(char_cnt)
     plt.title('character count per line')
@@ -152,6 +152,7 @@ def click_submit(window, values):
     display_charts(char_cnt, window)
     display_stats(code_stats, window)
 
+
 def btn(name, **kwargs):
     """ create button with default settings """
     return sg.Button(name, size=(16, 1), font=(sg.DEFAULT_FONT, 12), **kwargs)
@@ -166,7 +167,6 @@ def main():
          sg.Text('PASTE python code or LOAD from file; then click CALC!', font=(sg.DEFAULT_FONT, 12))],
         [sg.Multiline(key='IN_OUT', size=(160, 25), font=(sg.DEFAULT_FONT, 12))],
         [sg.Canvas(size=(434, 288), key='IMG'), sg.Multiline('', font=(sg.DEFAULT_FONT, 12), key='STATS')]]
-
 
     window = sg.Window('Code Counter', layout, resizable=True, finalize=True)
     window['IN_OUT'].expand(expand_x=True, expand_y=True)
