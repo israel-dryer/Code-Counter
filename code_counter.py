@@ -115,7 +115,7 @@ def main():
                         font=(sg.DEFAULT_FONT, 12))],
               [sg.Multiline(key='IN_OUT', size=(160, 25), font=(sg.DEFAULT_FONT, 12))]]
 
-    window = sg.Window('Code Counter', layout, finalize=True)
+    window = sg.Window('Code Counter', layout, resizable=True, finalize=True)
     window['IN_OUT'].expand(expand_x=True, expand_y=True)
     window.maximize()
 
