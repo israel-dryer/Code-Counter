@@ -8,6 +8,10 @@
 import PySimpleGUI as sg
 from os import system
 import statistics as stats
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib
+matplotlib.use('TkAgg')
 
 
 def clean_data(values):
@@ -81,9 +85,54 @@ def save_data(clean_code, code_stats, window):
         for row in clean_code:
             f.write(row + '\n')
     
-    # print output to screen
+    # update display
     with open('output.txt', 'r') as f:
         window['IN_OUT'].update(f.read())
+
+
+def display_charts(char_cnt, window):
+    """ create chart images to display in window """
+
+    def draw_figure(canvas, figure, loc=(0, 0)):
+        """ matplotlib helper function """
+        figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
+        figure_canvas_agg.draw()
+        figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+        return figure_canvas_agg
+
+    # histogram
+    figure = plt.figure(num=1, figsize=(10, 10))
+
+    plt.subplot(121)
+    plt.hist(char_cnt)
+    plt.title('character count per line')
+    plt.ylabel('frequency')
+
+    # line plot
+    plt.subplot(122)
+    x = range(0, len(char_cnt))
+    y = char_cnt
+    plt.plot(y)
+    plt.fill_between(x, y)
+    plt.title('compressed code line counts')
+    plt.xlabel('code line number')
+    plt.ylabel('number of characters') 
+
+    draw_figure(window['IMG'].TKCanvas, figure)
+
+
+def display_stats(code_stats, window):
+    """ display code stats in the window """
+    display = (
+          "Lines of code: {lines:,d}" +         
+        "\nTotal chars: {count:,d}" + 
+        "\nChars per line: {char_per_line:,d}" + 
+        "\nMean: {mean:,.0f}" + 
+        "\nMedian: {median:,.0f}" +        
+        "\nPStDev: {pstdev:,.0f}" + 
+        "\nMin: {min:,d}" +           
+        "\nMax: {max:,d}") 
+    window['STATS'].update(display.format(**code_stats))
 
 
 def click_file(window):
@@ -100,7 +149,8 @@ def click_submit(window, values):
     """ submit button click event; clean and save data """
     clean_code, char_cnt, code_stats = clean_data(values)
     save_data(clean_code, code_stats, window)
-
+    display_charts(char_cnt, window)
+    display_stats(code_stats, window)
 
 def btn(name, **kwargs):
     """ create button with default settings """
@@ -110,13 +160,17 @@ def btn(name, **kwargs):
 def main():
     """ main program and GUI loop """
     sg.ChangeLookAndFeel('BrownBlue')
-    layout = [[btn('Load FILE'), btn('CALC!'), btn('RESET'),
-               sg.Text('PASTE python code or LOAD from file; then click CALC!',
-                        font=(sg.DEFAULT_FONT, 12))],
-              [sg.Multiline(key='IN_OUT', size=(160, 25), font=(sg.DEFAULT_FONT, 12))]]
+    
+    layout = [
+        [btn('Load FILE'), btn('CALC!'), btn('RESET'),
+         sg.Text('PASTE python code or LOAD from file; then click CALC!', font=(sg.DEFAULT_FONT, 12))],
+        [sg.Multiline(key='IN_OUT', size=(160, 25), font=(sg.DEFAULT_FONT, 12))],
+        [sg.Canvas(size=(434, 288), key='IMG'), sg.Multiline('', font=(sg.DEFAULT_FONT, 12), key='STATS')]]
+
 
     window = sg.Window('Code Counter', layout, resizable=True, finalize=True)
     window['IN_OUT'].expand(expand_x=True, expand_y=True)
+    window['STATS'].expand(expand_x=True, expand_y=True)
     window.maximize()
 
     while True:
