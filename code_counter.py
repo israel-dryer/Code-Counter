@@ -16,7 +16,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 def clean_data(values):
     """ clean and parse the raw data """
-    raw = values['IN_OUT'].split('\n')
+    raw = values['INPUT'].split('\n')
     # remove whitespace
     data = [row.strip() for row in raw if row.strip()]
 
@@ -75,19 +75,12 @@ def clean_data(values):
 def save_data(clean_code, code_stats, window):
     """ save clean code and stats to file """
     with open('output.txt', 'w') as f:
-        # write statistics to file
-        f.write('STATISTICS\n' + '='*25 + '\n')
-        for key, value in code_stats.items():
-            f.write('{}: {:,.0f}\n'.format(key, value))
-        
-        # write clean data to file
-        f.write('\n\nCLEAN CODE\n' + '='*25 + '\n')
         for row in clean_code:
             f.write(row + '\n')
     
     # update display
     with open('output.txt', 'r') as f:
-        window['IN_OUT'].update(f.read())
+        window['OUTPUT'].update(f.read())
 
 
 def display_charts(char_cnt, window):
@@ -139,7 +132,7 @@ def click_file(window):
         return
     with open(filename) as f:
         raw = f.read()
-        window['IN_OUT'].update(raw)
+        window['INPUT'].update(raw)
 
 
 def click_submit(window, values):
@@ -159,7 +152,11 @@ def main():
     """ main program and GUI loop """
     sg.ChangeLookAndFeel('BrownBlue')
     
-    col1 = [[btn('Load FILE'), btn('CALC!'), btn('RESET')], [sg.Multiline(key='IN_OUT', font=(sg.DEFAULT_FONT, 12))]]
+    tab1 = sg.Tab('Raw Code', [[sg.Multiline(key='INPUT', pad=(5, 15), font=(sg.DEFAULT_FONT, 12))]], background_color='gray', key='T1')
+    tab2 = sg.Tab('Clean Code', [[sg.Multiline(key='OUTPUT', pad=(5, 15), font=(sg.DEFAULT_FONT, 12))]], background_color='green', key='T2')
+
+    col1 = [[btn('Load FILE'), btn('CALC!'), btn('RESET')], 
+            [sg.TabGroup([[tab1, tab2]], title_color='black', key='TABGROUP')]]
 
     col2 = [[sg.Text('\n1) PASTE python code or LOAD from file\n2) click CALC!', 
                 justification='center', font=(sg.DEFAULT_FONT, 12), size=(40, 5))],
@@ -167,8 +164,8 @@ def main():
            [sg.Multiline(size=(50, 10), key='STATS')],
            [sg.Canvas(key='IMG')]]
 
-    layout = [[sg.Column(col1, element_justification='center', pad=(0, 0), key='COL1'), 
-               sg.Column(col2, element_justification='center', pad=(0, 0), key='COL2')]]
+    layout = [[sg.Column(col1, element_justification='left', pad=(0, 10), key='COL1'), 
+               sg.Column(col2, element_justification='center', pad=(0, 10), key='COL2')]]
 
     window = sg.Window('Code Counter', layout, resizable=True, finalize=True)
     
@@ -180,8 +177,8 @@ def main():
     pos_x = (x1 - x2)//2
     pos_y = (y1 - y2)//2
     window.move(pos_x, pos_y)
-    
-    for elem in ['IN_OUT','STATS','COL1']:
+
+    for elem in ['INPUT','OUTPUT','STATS','COL1','TABGROUP']:
         window[elem].expand(expand_x=True, expand_y=True)
 
     while True:
@@ -196,11 +193,10 @@ def main():
             except:
                 continue
         if event == 'RESET':
-            window['IN_OUT'].update('')
-            print(window.get_screen_size())
-            print(window.size)
-            print(window.current_location())
-
+            window['INPUT'].update('')
+            window['OUTPUT'].update('')
+            window['STATS'].update('')
+        
 
 if __name__ == '__main__':
     main()
