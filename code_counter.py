@@ -124,14 +124,10 @@ def display_charts(char_cnt, window):
 def display_stats(code_stats, window):
     """ display code stats in the window """
     display = (
-          "Lines of code: {lines:,d}" +         
-        "\nTotal chars: {count:,d}" + 
-        "\nChars per line: {char_per_line:,d}" + 
-        "\nMean: {mean:,.0f}" + 
-        "\nMedian: {median:,.0f}" +        
-        "\nPStDev: {pstdev:,.0f}" + 
-        "\nMin: {min:,d}" +           
-        "\nMax: {max:,d}") 
+          "Lines of code: {lines:,d}\nTotal chars: {count:,d}" + 
+          "\nChars per line: {char_per_line:,d}\nMean: {mean:,.0f}" + 
+          "\nMedian: {median:,.0f}\nPStDev: {pstdev:,.0f}" + 
+          "\nMin: {min:,d}\nMax: {max:,d}") 
     window['STATS'].update(display.format(**code_stats))
 
 
