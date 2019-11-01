@@ -10,8 +10,8 @@ from os import system
 import statistics as stats
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import matplotlib
-matplotlib.use('TkAgg')
+#import matplotlib
+#matplotlib.use('TkAgg')
 
 
 def clean_data(values):
@@ -97,19 +97,20 @@ def display_charts(char_cnt, window):
         """ matplotlib helper function """
         figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
         figure_canvas_agg.draw()
-        figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+        figure_canvas_agg.get_tk_widget().pack()
         return figure_canvas_agg
 
-    figure = plt.figure(num=1, figsize=(10, 10))
+    figure = plt.figure(num=1, figsize=(4, 5))
 
     # histogram
-    plt.subplot(121)
+    plt.subplot(211)
     plt.hist(char_cnt)
     plt.title('character count per line')
     plt.ylabel('frequency')
+    plt.tight_layout()
 
     # line plot
-    plt.subplot(122)
+    plt.subplot(212)
     x = range(0, len(char_cnt))
     y = char_cnt
     plt.plot(y)
@@ -117,7 +118,7 @@ def display_charts(char_cnt, window):
     plt.title('compressed code line counts')
     plt.xlabel('code line number')
     plt.ylabel('number of characters') 
-
+    plt.tight_layout()
     draw_figure(window['IMG'].TKCanvas, figure)
 
 
@@ -158,16 +159,29 @@ def main():
     """ main program and GUI loop """
     sg.ChangeLookAndFeel('BrownBlue')
     
-    layout = [
-        [btn('Load FILE'), btn('CALC!'), btn('RESET'),
-         sg.Text('PASTE python code or LOAD from file; then click CALC!', font=(sg.DEFAULT_FONT, 12))],
-        [sg.Multiline(key='IN_OUT', size=(160, 18), font=(sg.DEFAULT_FONT, 12))],
-        [sg.Canvas(size=(434, 288), key='IMG'), sg.Multiline('', font=(sg.DEFAULT_FONT, 12), key='STATS')]]
+    col1 = [[btn('Load FILE'), btn('CALC!'), btn('RESET')], [sg.Multiline(key='IN_OUT', font=(sg.DEFAULT_FONT, 12))]]
+
+    col2 = [[sg.Text('1) PASTE python code or LOAD from file\n2) click CALC!', font=(sg.DEFAULT_FONT, 12), size=(40, 5))],
+           [sg.Text('Statistics', size=(20, 1), font=(sg.DEFAULT_FONT, 14, 'bold'), justification='center')],
+           [sg.Multiline(size=(50, 10), key='STATS')],
+           [sg.Canvas(key='IMG')]]
+
+    layout = [[sg.Column(col1, element_justification='center', pad=(0, 0), key='COL1'), 
+               sg.Column(col2, element_justification='center', pad=(0, 0), key='COL2')]]
 
     window = sg.Window('Code Counter', layout, resizable=True, finalize=True)
-    window['IN_OUT'].expand(expand_x=True, expand_y=True)
-    window['STATS'].expand(expand_x=True, expand_y=True)
-    window.maximize()
+    
+    # set screen size and position
+    x1, y1 = window.get_screen_size()
+    x2 = int(x1/1.6)
+    y2 = int(x2/1.5)
+    window.size = (x2, y2)
+    pos_x = (x1 - x2)//2
+    pos_y = (y1 - y2)//2
+    window.move(pos_x, pos_y)
+    
+    for elem in ['IN_OUT','STATS','COL1']:
+        window[elem].expand(expand_x=True, expand_y=True)
 
     while True:
         event, values = window.read()
@@ -182,6 +196,9 @@ def main():
                 continue
         if event == 'RESET':
             window['IN_OUT'].update('')
+            print(window.get_screen_size())
+            print(window.size)
+            print(window.current_location())
 
 
 if __name__ == '__main__':
