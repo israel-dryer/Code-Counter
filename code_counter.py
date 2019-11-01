@@ -10,12 +10,10 @@ from os import system
 import statistics as stats
 
 
-def read_file(filename):
-    """ open the file and read non-code lines """
-    with open(filename, 'r') as f:
-        raw = f.readlines()
-
-    # clean and parse initial raw data
+def clean_data(values):
+    """ clean and parse the raw data """
+    raw = values['IN_OUT'].split('\n')
+    # remove whitespace
     data = [row.strip() for row in raw if row.strip()]
 
     # remove hash comments
@@ -70,29 +68,70 @@ def read_file(filename):
     return clean_code, char_cnt, code_stats
 
 
-def main():
-    filename = sg.popup_get_file('Select a file', title='Code Counter')
-
-    if filename is None:
-        sg.popup_error('No file selected', title='ERROR!')
-        return
-    else:
-        clean_code, char_cnt, code_stats = read_file(filename)
-
-        with open('output.txt', 'w') as f:
-            # write statistics to file
-            f.write('STATISTICS\n' + '='*25 + '\n')
-            for key, value in code_stats.items():
-                f.write('{}: {:,.0f}\n'.format(key, value))
-            
-            # write clean data to file
-            f.write('\n\nCLEAN CODE\n' + '='*25 + '\n')
-            for row in clean_code:
-                f.write(row + '\n')
-
+def save_data(clean_code, code_stats, window):
+    """ save clean code and stats to file """
+    with open('output.txt', 'w') as f:
+        # write statistics to file
+        f.write('STATISTICS\n' + '='*25 + '\n')
+        for key, value in code_stats.items():
+            f.write('{}: {:,.0f}\n'.format(key, value))
         
-        # open file with default text editor
-        system('output.txt')
+        # write clean data to file
+        f.write('\n\nCLEAN CODE\n' + '='*25 + '\n')
+        for row in clean_code:
+            f.write(row + '\n')
+    
+    # print output to screen
+    with open('output.txt', 'r') as f:
+        window['IN_OUT'].update(f.read())
+
+
+def click_file(window):
+    """ file button click event; open file and load to screen """
+    filename = sg.popup_get_file('Select a file containing Python code:', title='Code Counter')
+    if filename is None:
+        return
+    with open(filename) as f:
+        raw = f.read()
+        window['IN_OUT'].update(raw)
+
+
+def click_submit(window, values):
+    """ submit button click event; clean and save data """
+    clean_code, char_cnt, code_stats = clean_data(values)
+    save_data(clean_code, code_stats, window)
+
+
+def btn(name, **kwargs):
+    """ create button with default settings """
+    return sg.Button(name, size=(16, 1), font=(sg.DEFAULT_FONT, 12), **kwargs)
+
+
+def main():
+    """ main program and GUI loop """
+    sg.ChangeLookAndFeel('BrownBlue')
+    layout = [[btn('Load FILE'), btn('CALC!'), btn('RESET'),
+               sg.Text('PASTE python code or LOAD from file; then click CALC!',
+                        font=(sg.DEFAULT_FONT, 12))],
+              [sg.Multiline(key='IN_OUT', size=(160, 25), font=(sg.DEFAULT_FONT, 12))]]
+
+    window = sg.Window('Code Counter', layout, finalize=True)
+    window['IN_OUT'].expand(expand_x=True, expand_y=True)
+    window.maximize()
+
+    while True:
+        event, values = window.read()
+        if event is None:
+            break
+        if event == 'Load FILE':
+            click_file(window)
+        if event == 'CALC!':
+            try:
+                click_submit(window, values)
+            except:
+                continue
+        if event == 'RESET':
+            window['IN_OUT'].update('')
 
 
 if __name__ == '__main__':
