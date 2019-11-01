@@ -161,7 +161,8 @@ def main():
     
     col1 = [[btn('Load FILE'), btn('CALC!'), btn('RESET')], [sg.Multiline(key='IN_OUT', font=(sg.DEFAULT_FONT, 12))]]
 
-    col2 = [[sg.Text('1) PASTE python code or LOAD from file\n2) click CALC!', font=(sg.DEFAULT_FONT, 12), size=(40, 5))],
+    col2 = [[sg.Text('\n1) PASTE python code or LOAD from file\n2) click CALC!', 
+                justification='center', font=(sg.DEFAULT_FONT, 12), size=(40, 5))],
            [sg.Text('Statistics', size=(20, 1), font=(sg.DEFAULT_FONT, 14, 'bold'), justification='center')],
            [sg.Multiline(size=(50, 10), key='STATS')],
            [sg.Canvas(key='IMG')]]
