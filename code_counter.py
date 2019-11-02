@@ -141,6 +141,7 @@ def click_submit(window, values):
     save_data(clean_code, code_stats, window)
     display_charts(char_cnt, window)
     display_stats(code_stats, window)
+    window['T2'].select()
 
 
 def btn(name, **kwargs):
@@ -177,6 +178,7 @@ def main():
     pos_x = (x1 - x2)//2
     pos_y = (y1 - y2)//2
     window.move(pos_x, pos_y)
+    # window.maximize()
 
     for elem in ['INPUT','OUTPUT','STATS','COL1','TABGROUP']:
         window[elem].expand(expand_x=True, expand_y=True)
