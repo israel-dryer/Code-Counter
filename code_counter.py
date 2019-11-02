@@ -117,12 +117,26 @@ def display_charts(char_cnt, window):
 
 def display_stats(code_stats, window):
     """ display code stats in the window """
-    display = (
-          "Lines of code: {lines:,d}\nTotal chars: {count:,d}" + 
-          "\nChars per line: {char_per_line:,d}\nMean: {mean:,.0f}" + 
-          "\nMedian: {median:,.0f}\nPStDev: {pstdev:,.0f}" + 
-          "\nMin: {min:,d}\nMax: {max:,d}") 
-    window['STATS'].update(display.format(**code_stats))
+    window['LINES'].update('{:,d}'.format(code_stats['lines']))
+    window['CHARS'].update('{:,d}'.format(code_stats['count']))
+    window['CPL'].update('{:,d}'.format(code_stats['char_per_line']))
+    window['MEAN'].update('{:,.0f}'.format(code_stats['mean']))
+    window['MEDIAN'].update('{:,.0f}'.format(code_stats['median']))
+    window['PSTDEV'].update('{:,.0f}'.format(code_stats['pstdev']))
+    window['MAX'].update('{:,d}'.format(code_stats['max']))
+    window['MIN'].update('{:,d}'.format(code_stats['min']))
+
+
+def reset_stats(window):
+    """ clear the stats fields """
+    window['LINES'].update('{:,d}'.format(0))
+    window['CHARS'].update('{:,d}'.format(0))
+    window['CPL'].update('{:,d}'.format(0))
+    window['MEAN'].update('{:,.0f}'.format(0))
+    window['MEDIAN'].update('{:,.0f}'.format(0))
+    window['PSTDEV'].update('{:,.0f}'.format(0))
+    window['MAX'].update('{:,d}'.format(0))
+    window['MIN'].update('{:,d}'.format(0))
 
 
 def click_file(window):
@@ -148,25 +162,45 @@ def btn(name, **kwargs):
     """ create button with default settings """
     return sg.Button(name, size=(16, 1), font=(sg.DEFAULT_FONT, 12), **kwargs)
 
+def stat(text, width=10, relief=None, justification='left', key=None):
+    elem = sg.Text(text, size=(width, 1), relief=relief, justification=justification, key=key)
+    return elem
 
 def main():
     """ main program and GUI loop """
     sg.ChangeLookAndFeel('BrownBlue')
     
-    tab1 = sg.Tab('Raw Code', [[sg.Multiline(key='INPUT', pad=(5, 15), font=(sg.DEFAULT_FONT, 12))]], background_color='gray', key='T1')
-    tab2 = sg.Tab('Clean Code', [[sg.Multiline(key='OUTPUT', pad=(5, 15), font=(sg.DEFAULT_FONT, 12))]], background_color='green', key='T2')
+    tab1 = sg.Tab('Raw Code', 
+        [[sg.Multiline(key='INPUT', pad=(0, 0), font=(sg.DEFAULT_FONT, 12))]], 
+        background_color='gray', key='T1')
+    tab2 = sg.Tab('Clean Code', 
+        [[sg.Multiline(key='OUTPUT', pad=(0, 0), font=(sg.DEFAULT_FONT, 12))]], 
+        background_color='gray25', key='T2')
 
-    col1 = [[btn('Load FILE'), btn('CALC!'), btn('RESET')], 
-            [sg.TabGroup([[tab1, tab2]], title_color='black', key='TABGROUP')]]
+    stat_col = sg.Column([
+        [stat('Lines of code'), stat(0, 8, 'sunken', 'right', 'LINES'),
+         stat('Total chars'), stat(0, 8, 'sunken', 'right', 'CHARS')],
+        [stat('Chars per line'), stat(0, 8, 'sunken', 'right', 'CPL'),
+         stat('Mean'), stat(0, 8, 'sunken', 'right', 'MEAN')],
+        [stat('Median'), stat(0, 8, 'sunken', 'right', 'MEDIAN'),
+         stat('PStDev'), stat(0, 8, 'sunken', 'right', 'PSTDEV')],
+        [stat('Max'), stat(0, 8, 'sunken', 'right', 'MAX'),
+         stat('Min'), stat(0, 8, 'sunken', 'right', 'MIN')]], pad=(5, 10), key='STATS')
 
-    col2 = [[sg.Text('\n1) PASTE python code or LOAD from file\n2) click CALC!', 
-                justification='center', font=(sg.DEFAULT_FONT, 12), size=(40, 5))],
-           [sg.Text('Statistics', size=(20, 1), font=(sg.DEFAULT_FONT, 14, 'bold'), justification='center')],
-           [sg.Multiline(size=(50, 10), key='STATS')],
-           [sg.Canvas(key='IMG')]]
+    lf_col = [
+        [btn('Load FILE'), btn('CALC!'), btn('RESET')], 
+        [sg.TabGroup([[tab1, tab2]], title_color='black', key='TABGROUP')]]
 
-    layout = [[sg.Column(col1, element_justification='left', pad=(0, 10), key='COL1'), 
-               sg.Column(col2, element_justification='center', pad=(0, 10), key='COL2')]]
+    rt_col = [
+        [sg.Text('Statistics', size=(20, 1), pad=((5, 5), (15, 5)), 
+                    font=(sg.DEFAULT_FONT, 14, 'bold'), justification='center')],
+        [stat_col], 
+        [sg.Text('Visualization', size=(20, 1), 
+            font=(sg.DEFAULT_FONT, 14, 'bold'), justification='center')],        
+        [sg.Canvas(key='IMG')]]
+
+    layout = [[sg.Column(lf_col, element_justification='left', pad=(0, 10), key='LCOL'), 
+               sg.Column(rt_col, element_justification='center', key='RCOL')]]
 
     window = sg.Window('Code Counter', layout, resizable=True, finalize=True)
     
@@ -180,7 +214,7 @@ def main():
     window.move(pos_x, pos_y)
     # window.maximize()
 
-    for elem in ['INPUT','OUTPUT','STATS','COL1','TABGROUP']:
+    for elem in ['INPUT','OUTPUT','LCOL','TABGROUP']:
         window[elem].expand(expand_x=True, expand_y=True)
 
     while True:
@@ -197,8 +231,8 @@ def main():
         if event == 'RESET':
             window['INPUT'].update('')
             window['OUTPUT'].update('')
-            window['STATS'].update('')
-        
+            reset_stats(window)
+            
 
 if __name__ == '__main__':
     main()
