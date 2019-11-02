@@ -14,9 +14,9 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 #matplotlib.use('TkAgg')
 
 
-def clean_data(values):
+def clean_data(window):
     """ clean and parse the raw data """
-    raw = values['INPUT'].split('\n')
+    raw = window.AllKeysDict['INPUT'].DefaultText.split('\n')
     # remove whitespace
     data = [row.strip() for row in raw if row.strip()]
 
@@ -70,6 +70,19 @@ def clean_data(values):
         'pstdev': stats.pstdev(char_cnt), 'min': min(char_cnt), 'max': max(char_cnt)}
 
     return clean_code, char_cnt, code_stats
+
+
+
+def process_data(window):
+    """ clean and save data ... previous executed manually with submit button """
+    try:
+        clean_code, char_cnt, code_stats = clean_data(window)
+        save_data(clean_code, code_stats, window)
+        display_charts(char_cnt, window)
+        display_stats(code_stats, window)
+        window['T2'].select()
+    except:
+        sg.popup_error('Something is amiss... ', no_titlebar=True)
 
 
 def save_data(clean_code, code_stats, window):
@@ -127,6 +140,33 @@ def display_stats(code_stats, window):
     window['MIN'].update('{:,d}'.format(code_stats['min']))
 
 
+def click_file(window):
+    """ file button click event; open file and load to screen """
+    filename = sg.popup_get_file('Select a file containing Python code:', title='Code Counter')
+    if filename is None:
+        return
+    with open(filename) as f:
+        raw = f.read()
+        window['INPUT'].update(raw)
+
+
+def click_clipboard(window):
+    """ get data from clipboard and paste to input """
+    try:
+        clip = window['INPUT'].Widget.clipboard_get()
+        window['INPUT'].update(clip)
+    except:
+        sg.popup_error('Clipboard is empty', no_titlebar=True)
+
+
+def click_reset(window):
+    """ reset the windows and data fields """
+    window['INPUT'].update('')
+    window['OUTPUT'].update('')
+    reset_stats(window)    
+    window['T1'].select()
+
+
 def reset_stats(window):
     """ clear the stats fields """
     window['LINES'].update('{:,d}'.format(0))
@@ -139,32 +179,15 @@ def reset_stats(window):
     window['MIN'].update('{:,d}'.format(0))
 
 
-def click_file(window):
-    """ file button click event; open file and load to screen """
-    filename = sg.popup_get_file('Select a file containing Python code:', title='Code Counter')
-    if filename is None:
-        return
-    with open(filename) as f:
-        raw = f.read()
-        window['INPUT'].update(raw)
-
-
-def click_submit(window, values):
-    """ submit button click event; clean and save data """
-    clean_code, char_cnt, code_stats = clean_data(values)
-    save_data(clean_code, code_stats, window)
-    display_charts(char_cnt, window)
-    display_stats(code_stats, window)
-    window['T2'].select()
-
-
 def btn(name, **kwargs):
     """ create button with default settings """
     return sg.Button(name, size=(16, 1), font=(sg.DEFAULT_FONT, 12), **kwargs)
 
+
 def stat(text, width=10, relief=None, justification='left', key=None):
     elem = sg.Text(text, size=(width, 1), relief=relief, justification=justification, key=key)
     return elem
+
 
 def main():
     """ main program and GUI loop """
@@ -188,10 +211,11 @@ def main():
          stat('Min'), stat(0, 8, 'sunken', 'right', 'MIN')]], pad=(5, 10), key='STATS')
 
     lf_col = [
-        [btn('Load FILE'), btn('CALC!'), btn('RESET')], 
+        [btn('Load FILE'), btn('Clipboard'), btn('RESET')], 
         [sg.TabGroup([[tab1, tab2]], title_color='black', key='TABGROUP')]]
 
     rt_col = [
+        [sg.Text('LOAD a file or PASTE code from Clipboard', pad=(5, 15))],
         [sg.Text('Statistics', size=(20, 1), pad=((5, 5), (15, 5)), 
                     font=(sg.DEFAULT_FONT, 14, 'bold'), justification='center')],
         [stat_col], 
@@ -212,26 +236,24 @@ def main():
     pos_x = (x1 - x2)//2
     pos_y = (y1 - y2)//2
     window.move(pos_x, pos_y)
-    # window.maximize()
+    window.maximize()
 
     for elem in ['INPUT','OUTPUT','LCOL','TABGROUP']:
         window[elem].expand(expand_x=True, expand_y=True)
 
+    # main event loop
     while True:
         event, values = window.read()
         if event is None:
             break
         if event == 'Load FILE':
             click_file(window)
-        if event == 'CALC!':
-            try:
-                click_submit(window, values)
-            except:
-                continue
+            process_data(window)
+        if event == 'Clipboard':
+            click_clipboard(window)
+            process_data(window)
         if event == 'RESET':
-            window['INPUT'].update('')
-            window['OUTPUT'].update('')
-            reset_stats(window)
+            click_reset(window)
             
 
 if __name__ == '__main__':
