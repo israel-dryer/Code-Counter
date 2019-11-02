@@ -1,7 +1,7 @@
-# Code-Counter
-A simple program that strips comments and whitespace from a code file and provides summary statistics. This is **very minimal** at the moment, but I'd like to add more in the future (time permitting).
-
-Load python code from a **file**, or **paste** into the window. Then, click CALC!
+# Code-Counter (in progress)
+A simple program that strips comments and whitespace from a code file and provides summary statistics. 
+  
+When you load Python code from either a **file** or from the **clipboard** your code will be instantly cleaned and measured. Their are tabs for the original **Raw Code** and the new **Clean Code**.    
 
 ![](Images/after.PNG)   
 
